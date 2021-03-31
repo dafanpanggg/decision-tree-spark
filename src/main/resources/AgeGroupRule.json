@@ -1,0 +1,53 @@
+{
+  "schema": "id, jr_age, xinan_age, jl_age, umc_age, yc_age, vector",
+  "source": "xxx, age_group",
+  "sink": "xxx, age_group",
+  "rules": {
+    "rule": "jr_age != null",
+    "left": {
+      "rule": "GeneralRule, jr_age, 1.0"
+    },
+    "right": {
+      "rule": "xinan_age != null",
+      "left": {
+        "rule": "GeneralRule, xinan_age, 0.997349184"
+      },
+      "right": {
+        "rule": "jl_age != null || umc_age != null || yc_age != null",
+        "left": {
+          "rule": "jl_age == umc_age || jl_age == yc_age || umc_age == yc_age",
+          "left": {
+            "rule": "jl_age == umc_age || jl_age == yc_age",
+            "left": {
+              "rule": "GeneralRule, jl_age, 0.992448605"
+            },
+            "right": {
+              "rule": "GeneralRule, umc_age, 0.992448605"
+            }
+          },
+          "right": {
+            "rule": "jl_age != null",
+            "left": {
+              "rule": "GeneralRule, jl_age, 0.982582546"
+            },
+            "right": {
+              "rule": "umc_age != null",
+              "left": {
+                "rule": "GeneralRule, umc_age, 0.974128879"
+              },
+              "right": {
+                "rule": "GeneralRule, yc_age, 0.920175899"
+              }
+            }
+          }
+        },
+        "right": {
+          "rule": "vector != null",
+          "left": {
+            "rule": "ModelRule, com.yang.decision.model.XGBoostPipelineModel, /xx/xx/xx/xx/xx/age/age-applist-xgb-0901, null"
+          }
+        }
+      }
+    }
+  }
+}
