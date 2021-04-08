@@ -1,7 +1,7 @@
 {
   "schema": "id, jr_age, xinan_age, jl_age, umc_age, yc_age, vector",
-  "source": "xxx, age_group",
-  "sink": "xxx, age_group",
+  "source": "xxxxxx, age_group",
+  "sink": "xxxxxx, age_group",
   "rules": {
     "rule": "jr_age != null",
     "left": {
@@ -44,7 +44,7 @@
         "right": {
           "rule": "vector != null",
           "left": {
-            "rule": "ModelRule, com.yang.decision.model.XGBoostPipelineModel, /xx/xx/xx/xx/xx/age/age-applist-xgb-0901, null"
+            "rule": "ModelRule, com.bj58.decision.model.XGBoostPipelineModel, /xxxxxx/xxxxxx/xxxxxx/age-applist-xgb-0901, null"
           }
         }
       }

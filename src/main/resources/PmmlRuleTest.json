@@ -1,0 +1,8 @@
+{
+  "schema": "id, bad_zhuanqian_now_pct, bad_jinrong_toubu_180d_pct, bad_duwu_all_pct, bad_gaowei_365d_pct, good_qiche_all_pct, good_jiazhang_all_pct, good_fangzonghe_180d_pct, skilllevelv2, good_shenghuo_now_pct, bad_jinrong_qita_180d_pct, good_shebao_all_pct, good_jiaotong_all_pct, preav7, good_fangzonghe_now_pct, total_dpddays_thismth_h1, bad_gaowei_all_pct, good_gongzuoxuexi_all_pct, appscrv3,avg_pay_withholding_fail_cnt_avg03m, houselevelv2",
+  "source": "xxxxxx, pmml_test",
+  "sink": "xxxxxx, pmml_test",
+  "rules": {
+    "rule": "ModelRule, com.bj58.decision.model.PmmlModel, /xxxxxx/xxxxxx/xxxxxx/bmdlv4_xgbv7_20210312.xml, null"
+  }
+}

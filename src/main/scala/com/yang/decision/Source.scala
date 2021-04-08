@@ -1,5 +1,6 @@
 package com.yang.decision
 
+import com.yang.utils.FileUtils
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
@@ -47,7 +48,7 @@ object Source {
         .map(item => StructField(item.trim, StringType))
     )
     val inputDF = if (conf.isLocal) {
-      getInputDataLocal(spark)
+      getInputDataLocal(spark, conf)
     } else {
       getInputDataCluster(spark, conf)
     }
@@ -57,7 +58,8 @@ object Source {
       Row.fromSeq(id +: featuresStr.split("_", -1).map(emptyStr2Null))
     })
     val data = spark.createDataFrame(rdd, schema).repartition(conf.parallelism)
-    if (conf.isCache) data.cache()
+    val isCache = conf.conf(Configuration.IS_CACHE).toBoolean
+    if (isCache) data.cache()
     data
   }
 
@@ -66,13 +68,16 @@ object Source {
     case _ => null
   }
 
-  private def getInputDataLocal(spark: SparkSession): DataFrame = {
+  private def getInputDataLocal(spark: SparkSession,
+                                conf: Configuration): DataFrame = {
+    val source = conf.conf(Configuration.LOCAL_SOURCE)
+    val path = FileUtils.getURLFromLocal(source).getPath
     spark.read.format("csv")
       .option("header", "true")
       .option("multiLine", value = true)
       .option("quote", "\"")
       .option("escape", "\"")
-      .load("C:\\Users\\Administrator\\Desktop\\项目文档\\决策树模型工程\\age.csv")
+      .load(path)
   }
 
   private def getInputDataCluster(spark: SparkSession,

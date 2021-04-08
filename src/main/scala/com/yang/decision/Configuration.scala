@@ -1,7 +1,5 @@
 package com.yang.decision
 
-import java.text.SimpleDateFormat
-
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
@@ -31,35 +29,22 @@ object Configuration {
     */
   final val IS_LOCAL = "is.local"
   /**
+    * 本地模式下，数据源文件，无默认值
+    */
+  final val LOCAL_SOURCE = "local.source"
+  /**
     * 是否启用cache，默认true
     */
   final val IS_CACHE = "is.cache"
+  /**
+    * 是否开启支持稀疏数组，默认true
+    */
+  final val ENABLE_SPARSE_VECTOR = "enable.sparse.vector"
 
-  private final val df1 = new SimpleDateFormat("yyyyMMdd")
-
-  private def currentDate: String = df1.format(System.currentTimeMillis())
-
-  def init(modelConfFilePath: String,
-           processTime: String,
-           parallelism: Int): Configuration = {
-    val prop = new Configuration()
-    val seq = Seq(
-      (MODEL_CONF_FILE_PATH, modelConfFilePath),
-      (PROCESS_TIME, processTime),
-      (PARALLELISM, String.valueOf(parallelism)),
-      (IS_LOCAL, String.valueOf(false)),
-      (IS_CACHE, String.valueOf(true))
-    )
-    prop.conf ++= seq
-    prop
-  }
-
-  def init(modelFilePath: String, processTime: String): Configuration = {
-    init(modelFilePath, processTime, 300)
-  }
-
-  def init(modelFilePath: String): Configuration = {
-    init(modelFilePath, currentDate)
+  def init(map: Seq[(String, String)]): Configuration = {
+    val conf = new Configuration
+    conf.conf ++= map
+    conf
   }
 
   def newInstance[T](className: String,
@@ -75,13 +60,11 @@ sealed class Configuration extends Serializable {
 
   val conf: mutable.Map[String, String] = mutable.Map[String, String]()
 
-  def processTime: String = conf(Configuration.PROCESS_TIME)
-
   def modelConfFilePath: String = conf(Configuration.MODEL_CONF_FILE_PATH)
+
+  def processTime: String = conf(Configuration.PROCESS_TIME)
 
   def parallelism: Int = conf(Configuration.PARALLELISM).toInt
 
   def isLocal: Boolean = conf(Configuration.IS_LOCAL).toBoolean
-
-  def isCache: Boolean = conf(Configuration.IS_CACHE).toBoolean
 }

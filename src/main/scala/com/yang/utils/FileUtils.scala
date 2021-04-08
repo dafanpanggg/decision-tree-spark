@@ -1,6 +1,7 @@
 package com.yang.utils
 
-import java.io.{BufferedReader, InputStreamReader}
+import java.io.{BufferedReader, InputStream, InputStreamReader}
+import java.net.URL
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -17,10 +18,20 @@ import scala.io.Source
   */
 object FileUtils {
 
+  def getURLFromLocal(src: String): URL =
+    this.getClass.getClassLoader.getResource(src)
+
+  def getInputStreamFromLocal(src: String): InputStream =
+    getURLFromLocal(src).openStream()
+
+  def getInputStreamFromHDFS(src: String): InputStream =
+    FileSystem.get(new Configuration).open(new Path(src))
+
   def readFromLocal(src: String): String = try {
-    val filePath = this.getClass.getClassLoader.getResource(src)
-    val buffer = Source.fromURL(filePath)
+    val in = getInputStreamFromLocal(src)
+    val buffer = Source.fromInputStream(in)
     val str = buffer.getLines.mkString("\n")
+    in.close()
     buffer.close()
     str
   } catch {
@@ -30,16 +41,16 @@ object FileUtils {
   }
 
   def readFromHDFS(src: String): String = try {
-    val fs = FileSystem.get(new Configuration)
-    val br = new BufferedReader(new InputStreamReader(fs.open(new Path(src))))
+    val in = getInputStreamFromHDFS(src)
+    val br = new BufferedReader(new InputStreamReader(in))
     val arr = new mutable.ArrayBuffer[String]()
     var line = br.readLine()
     while (null != line) {
       arr += line
       line = br.readLine()
     }
+    in.close()
     br.close()
-    fs.close()
     arr.mkString("\n")
   } catch {
     case _: Exception =>
@@ -48,6 +59,6 @@ object FileUtils {
   }
 
   def main(args: Array[String]): Unit = {
-    println(readFromLocal("AgeGroupRule.json"))
+    println(getURLFromLocal("AgeGroupRule.json").getPath)
   }
 }
