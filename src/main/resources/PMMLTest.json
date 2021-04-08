@@ -3,6 +3,6 @@
   "source": "xxxxxx, pmml_test",
   "sink": "xxxxxx, pmml_test",
   "rules": {
-    "rule": "ModelRule, com.bj58.decision.model.PmmlModel, /xxxxxx/xxxxxx/xxxxxx/bmdlv4_xgbv7_20210312.xml, null"
+    "rule": "ModelRule, PMML, /xxxxxx/xxxxxx/xxxxxx/bmdlv4_xgbv7_20210312.xml, null"
   }
 }

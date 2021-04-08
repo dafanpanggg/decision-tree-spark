@@ -44,7 +44,7 @@
         "right": {
           "rule": "vector != null",
           "left": {
-            "rule": "ModelRule, com.bj58.decision.model.XGBoostPipelineModel, /xxxxxx/xxxxxx/xxxxxx/age-applist-xgb-0901, null"
+            "rule": "ModelRule, XGBoost, /xxxxxx/xxxxxx/xxxxxx/age-applist-xgb-0901, null"
           }
         }
       }

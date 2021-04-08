@@ -1,6 +1,7 @@
 package com.yang.decision.tree
 
 import com.yang.decision._
+import com.yang.decision.model.Model
 import org.apache.spark.sql.DataFrame
 
 /**
@@ -20,10 +21,9 @@ class Calculation(parent: Tree[DataFrame],
       val arr: Array[String] = ruleText.split(",").map(_.trim)
       arr(0) match {
         case "GeneralRule" => GeneralRule(arr(1), arr(2).toDouble)
-        case "ModelRule" => ModelRule(arr(1), arr(2), conf)
+        case "ModelRule" => ModelRule(Model.modelReference(arr(1)), arr(2), conf)
         case r@_ =>
-          throw new RuntimeException(s"`Calculation` class Exception, " +
-            s"`rule` mast be `GeneralRule` or `ModelRule` but get `$r` !")
+          throw new RuntimeException(s"`$r` is an unsupported rule type !")
       }
     case _ => null
   }

@@ -17,7 +17,7 @@ object Parser {
 
   implicit val formats: DefaultFormats.type = DefaultFormats
 
-  def parse(text: String, conf: Configuration): Tree[DataFrame] = try {
+  def parse(text: String, conf: Configuration): Tree[DataFrame] = {
     val jv = JsonMethods.parse(text)
     conf.conf ++= Seq(
       ("source.schema", (jv \ "schema").extract[String]),
@@ -25,10 +25,6 @@ object Parser {
       ("sink", (jv \ "sink").extract[String])
     )
     parse2Tree(jv \ "rules", null, conf)
-  } catch {
-    case _: Exception =>
-      throw new RuntimeException(
-        s"`parse` method Exception, config text parse failed !")
   }
 
   def parse2Tree(jv: JValue,

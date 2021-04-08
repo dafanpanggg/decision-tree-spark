@@ -16,3 +16,12 @@ abstract class Model(modelFilePath:String, conf: Configuration) extends Serializ
 
   def execute(data: DataFrame): DataFrame
 }
+
+object Model {
+
+  def modelReference(name: String): String = name match {
+    case "XGBoost"|"xgboost" => "com.bj58.decision.model.XGBoostPipelineModel"
+    case "PMML"|"pmml" => "com.bj58.decision.model.PMMLModel"
+    case _ => throw new RuntimeException(s"`$name` is an unsupported model type !")
+  }
+}
