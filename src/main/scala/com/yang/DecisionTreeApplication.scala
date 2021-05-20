@@ -1,11 +1,9 @@
 package com.yang
 
-import java.text.SimpleDateFormat
+import com.yang.decision.ApplicationContext
+import org.apache.spark.internal.Logging
 
-import com.yang.decision.build._
-import com.yang.decision.{Configuration, Source}
-import com.yang.utils.{FileUtils, SparkUtils}
-import org.slf4j.LoggerFactory
+import scala.collection.mutable
 
 /**
   * 决策树模型抽象工程Application入口类
@@ -32,106 +30,66 @@ import org.slf4j.LoggerFactory
   *          经过测试，发现这种复杂类型在数据传输过程中需要占用较大的内存，影响计算效率。
   *          解决方案：在向量维度较多时，我们提供将向量转换成稀疏数组Array<Array<Double>>，
   *          再将其转为字符串格式，这样在数据传递过程中就能大幅减少内存占用。
-  * @version 2021/3/29 1.0.3 增加了节点对PMML的支持，
+  * @version 2021/4/8 1.0.3 增加了节点对PMML的支持，
   *          增加Model实现类[[com.yang.decision.model.PMMLModel]]
+  * @version 2021/4/19 1.0.4 增加source字段，用于区分特征计算的数据来源
+  * @version 2021/4/26 1.0.5 对[[com.yang.DecisionTreeApplication]]入口类进行封装，
+  *          提供外部开发测试的上下文[[com.yang.decision.ApplicationContext]]，
+  *          示例：
+  *          val conf = Seq(
+  *             (Configuration.PROCESS_TIME, String.valueOf(1)),
+  *             (Configuration.IS_LOCAL, String.valueOf(true)),
+  *             (Configuration.IS_CACHE, String.valueOf(false)),
+  *             (Configuration.ENABLE_SPARSE_VECTOR, String.valueOf(false)),
+  *             ("local.source", "car.csv")
+  *          )
+  *          val context = ApplicationContext
+  *             .builder
+  *             .config(conf)
+  *             .args(args)
+  *             .create()
+  *          context.run()
   */
 object DecisionTreeApplication {
 
-  private final val logger = LoggerFactory.getLogger(this.getClass)
+  def builder = new Builder
 
-  private def readInputArgs(args: Array[String]): Seq[(String, String)] = {
-    if (null == args || args.length < 1) {
-      throw new IllegalArgumentException(
-        s"`readInputArgs` method Exception, " +
-          s"args length at least 1 but get `${args.mkString(",")}` !")
+  class Builder extends Logging {
+    lazy val options = new mutable.HashMap[String, String]
+    var args: Array[String] = _
+
+    def config(conf: Seq[(String, String)]): Builder = {
+      logError(s"\n== input conf ==\n$conf")
+      options ++= conf
+      this
     }
-    logger.error("\n== input args ==\n{}", args.mkString(","))
-    try {
-      args.length match {
-        case 1 => Seq((Configuration.MODEL_CONF_FILE_PATH, args(0)))
-        case 2 => Seq(
-          (Configuration.MODEL_CONF_FILE_PATH, args(0)),
-          (Configuration.PROCESS_TIME, args(1))
-        )
-        case _ => Seq(
-          (Configuration.MODEL_CONF_FILE_PATH, args(0)),
-          (Configuration.PROCESS_TIME, args(1)),
-          (Configuration.PARALLELISM, args(2))
-        )
+
+    private def readInputArgs(args: Array[String]): Seq[(String, String)] = {
+      logError(s"\n== input args ==\n$args")
+      if (null == args || args.length < 1) {
+        throw new IllegalArgumentException(s"args mast not be null !")
       }
-    } catch {
-      case _: Exception =>
-        throw new IllegalArgumentException(
-          s"`readInputArgs` method Exception, args type change failed !")
-    }
-  }
-
-  /**
-    * 加载默认配置
-    */
-  def loadDefaultConf: Seq[(String, String)] = {
-    val df = new SimpleDateFormat("yyyyMMdd")
-    def currentDate: String = df.format(System.currentTimeMillis())
-    Seq((Configuration.PROCESS_TIME, currentDate),
-      (Configuration.PARALLELISM, String.valueOf(300)),
-      (Configuration.IS_LOCAL, String.valueOf(false)),
-      (Configuration.IS_CACHE, String.valueOf(true)),
-      (Configuration.ENABLE_SPARSE_VECTOR, String.valueOf(true))
-    )
-  }
-
-  def main(args: Array[String]): Unit = {
-
-    val conf = Configuration.init(loadDefaultConf)
-
-    /**
-      * args0：模型配置文件路径，必传
-      * args1：执行日期，不传则默认当前日期
-      * args2：并行度，不传则默认300
-      */
-    conf.conf ++= readInputArgs(args)
-    /*conf.conf(Configuration.PARALLELISM) = String.valueOf(1)
-    conf.conf(Configuration.IS_LOCAL) = String.valueOf(true)
-    conf.conf(Configuration.LOCAL_SOURCE) = "pmml_test.csv"
-    conf.conf(Configuration.IS_CACHE) = String.valueOf(false)*/
-
-    val modelConfigText = if (conf.isLocal) {
-      FileUtils.readFromLocal(conf.modelConfFilePath)
-    } else {
-      FileUtils.readFromHDFS(conf.modelConfFilePath)
-    }
-    logger.error("\n== model config text ==\n{}", modelConfigText)
-
-    /**
-      * 解析Json为一棵二叉树，同时绑定树节点规则
-      */
-    val parsedTree = Parser.parse(modelConfigText, conf)
-    logger.error("\n== configuration ==\n{}", conf.conf.mkString("\n"))
-    logger.error("\n== parsed tree ==\n{}", parsedTree)
-
-    val spark = SparkUtils.initSession(conf.isLocal,
-      this.getClass.getSimpleName + "_" + System.currentTimeMillis())
-
-    val data = Source.loadData(spark, conf)
-
-    /**
-      * 先序遍历parsedTree，根据节点规则绑定子节点的数据集，生成绑定后的树boundTree
-      */
-    val boundTree = Binder.bind(parsedTree, data)
-    logger.error("\n== bound tree ==\n{}", boundTree)
-
-    /**
-      * 遍历全部叶子节点Calculation，叶子节点的数据即为不同规则下的结果集，
-      * union全部叶子节点数据后，即为最终结果集
-      */
-    if (conf.isLocal) {
-      val df = Executor.execute(boundTree)
-      df.explain(extended = true)
-      df.show(false)
-    } else {
-      Executor.executeAndSaveResultData(boundTree, conf)
+      parseArgs(args.toList)
     }
 
-    spark.close()
+    private def parseArgs(args: List[String]): Seq[(String, String)] = args match {
+      case k :: v :: tail =>
+        if (k.startsWith("--")) {
+          (k.substring(2), v) +: parseArgs(tail)
+        } else {
+          throw new IllegalArgumentException(
+            s"args key mast starts with `--` but get `$k` !")
+        }
+      case Nil => List()
+    }
+
+    def args(args: Array[String]): Builder = {
+      options ++= readInputArgs(args)
+      this
+    }
+
+    def create(): ApplicationContext = ApplicationContext(options.toSeq)
   }
+
+  def main(args: Array[String]): Unit = builder.args(args).create().run()
 }

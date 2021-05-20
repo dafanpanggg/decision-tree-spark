@@ -26,6 +26,7 @@ object Executor {
          |	id
          |	,featureValue
          |	,confidenceScore
+         |  ,source
          |from output_data_temp_view
        """.stripMargin
     )

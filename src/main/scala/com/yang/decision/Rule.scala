@@ -18,8 +18,10 @@ trait Rule extends Serializable {
 /**
   * 普通计算
   *
+  * @author yangfan
   * @since 2021/3/16
   * @version 1.0.0
+  * @version 1.0.4 增加source字段，用于区分特征值的来源
   */
 case class GeneralRule(fieldName: String, confidence: Double) extends Rule {
 
@@ -28,7 +30,8 @@ case class GeneralRule(fieldName: String, confidence: Double) extends Rule {
       OutputData(
         row.getAs[String]("id"),
         row.getAs[String](fieldName),
-        confidence
+        confidence,
+        fieldName
       )
     )(Encoders.product[OutputData]).toDF()
   }
@@ -39,6 +42,7 @@ case class GeneralRule(fieldName: String, confidence: Double) extends Rule {
 /**
   * 模型计算
   *
+  * @author yangfan
   * @since 2021/3/16
   * @version 1.0.0
   */

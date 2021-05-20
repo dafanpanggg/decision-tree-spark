@@ -8,6 +8,25 @@
 
 @version 2021/3/29 V1.0.3 增加了节点对PMML的支持，增加Model实现类PmmlModel
 
+@version 2021/3/29 V1.0.4 增加source字段，用于区分特征计算的数据来源
+
+@version 2021/3/29 V1.0.5 对[[com.yang.DecisionTreeApplication]]入口类进行封装，提供外部开发测试的上下文[[com.bj58.decision.ApplicationContext]]，示例：
+    def main(args: Array[String]): Unit = {
+        val conf = Seq(
+          (Configuration.PROCESS_TIME, String.valueOf(1)),
+          (Configuration.IS_LOCAL, String.valueOf(true)),
+          (Configuration.IS_CACHE, String.valueOf(false)),
+          (Configuration.ENABLE_SPARSE_VECTOR, String.valueOf(false)),
+          ("local.source", "car.csv")
+        )
+        val context = ApplicationContext
+          .builder
+          .config(conf)
+          .args(args)
+          .create()
+        context.run()
+    }
+
 项目背景：
 在集团数据挖掘项目下，用户画像工程需要开发很多基础标签，如年龄、性别、婚姻状况、资产情况等标签。这些标签不能使用集团下的各个数据源来简单的处理后，得到结果作为最终评价结果，因为不同数据源的数据质量参差不齐，且各个数据源得到的结果置信度情况也不一样。因此我们需要使用决策树+XGBoost等模型来综合预测用户标签。
 

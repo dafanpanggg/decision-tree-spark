@@ -70,7 +70,7 @@ object Source {
 
   private def getInputDataLocal(spark: SparkSession,
                                 conf: Configuration): DataFrame = {
-    val source = conf.conf(Configuration.LOCAL_SOURCE)
+    val source = conf.conf("local.source")
     val path = FileUtils.getURLFromLocal(source).getPath
     spark.read.format("csv")
       .option("header", "true")

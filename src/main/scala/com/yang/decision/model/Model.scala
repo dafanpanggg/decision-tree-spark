@@ -10,7 +10,7 @@ import org.apache.spark.sql.DataFrame
   * @since 2021/3/8
   * @version 1.0.0
   */
-abstract class Model(modelFilePath:String, conf: Configuration) extends Serializable {
+abstract class Model(modelFilePath: String, conf: Configuration) extends Serializable {
 
   val model: Any
 
@@ -19,9 +19,9 @@ abstract class Model(modelFilePath:String, conf: Configuration) extends Serializ
 
 object Model {
 
-  def modelReference(name: String): String = name match {
-    case "XGBoost"|"xgboost" => "com.bj58.decision.model.XGBoostPipelineModel"
-    case "PMML"|"pmml" => "com.bj58.decision.model.PMMLModel"
+  def getReference(name: String): String = name match {
+    case "XGBoost" | "xgboost" => "com.bj58.decision.model.XGBoostPipelineModel"
+    case "PMML" | "pmml" => "com.bj58.decision.model.PMMLModel"
     case _ => throw new RuntimeException(s"`$name` is an unsupported model type !")
   }
 }

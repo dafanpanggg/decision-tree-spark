@@ -21,7 +21,14 @@ class Calculation(parent: Tree[DataFrame],
       val arr: Array[String] = ruleText.split(",").map(_.trim)
       arr(0) match {
         case "GeneralRule" => GeneralRule(arr(1), arr(2).toDouble)
-        case "ModelRule" => ModelRule(Model.modelReference(arr(1)), arr(2), conf)
+        case "ModelRule" =>
+          arr(1) match {
+            case "XGBoost" | "xgboost" =>
+              val xgConf = conf.copy
+              xgConf.conf("xgboost.vector.field") = arr(2)
+              ModelRule(Model.getReference(arr(1)), arr(3), xgConf)
+            case _ => ModelRule(Model.getReference(arr(1)), arr(2), conf)
+          }
         case r@_ =>
           throw new RuntimeException(s"`$r` is an unsupported rule type !")
       }

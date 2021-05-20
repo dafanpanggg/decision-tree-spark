@@ -1,5 +1,7 @@
 package com.yang.decision
 
+import java.text.SimpleDateFormat
+
 import org.apache.spark.sql.SparkSession
 
 import scala.collection.mutable
@@ -15,7 +17,7 @@ object Configuration {
   /**
     * 模型配置文件路径
     */
-  final val MODEL_CONF_FILE_PATH = "model.conf.file.path"
+  final val MODEL_CONF_FILE_PATH = "decision.tree.file.path"
   /**
     * 执行时间，默认当前时间
     */
@@ -29,22 +31,35 @@ object Configuration {
     */
   final val IS_LOCAL = "is.local"
   /**
-    * 本地模式下，数据源文件，无默认值
-    */
-  final val LOCAL_SOURCE = "local.source"
-  /**
     * 是否启用cache，默认true
     */
   final val IS_CACHE = "is.cache"
   /**
-    * 是否开启支持稀疏数组，默认true
+    * 是否开启支持稀疏数组，默认false
     */
   final val ENABLE_SPARSE_VECTOR = "enable.sparse.vector"
 
   def init(map: Seq[(String, String)]): Configuration = {
     val conf = new Configuration
+    conf.conf ++= loadDefaultConf
     conf.conf ++= map
     conf
+  }
+
+  /**
+    * 加载默认配置
+    */
+  def loadDefaultConf: Seq[(String, String)] = {
+    val df = new SimpleDateFormat("yyyyMMdd")
+
+    def currentDate: String = df.format(System.currentTimeMillis())
+
+    Seq((Configuration.PROCESS_TIME, currentDate),
+      (Configuration.PARALLELISM, String.valueOf(300)),
+      (Configuration.IS_LOCAL, String.valueOf(false)),
+      (Configuration.IS_CACHE, String.valueOf(true)),
+      (Configuration.ENABLE_SPARSE_VECTOR, String.valueOf(false))
+    )
   }
 
   def newInstance[T](className: String,
@@ -59,6 +74,8 @@ object Configuration {
 sealed class Configuration extends Serializable {
 
   val conf: mutable.Map[String, String] = mutable.Map[String, String]()
+
+  def copy: Configuration = Configuration.init(conf.toSeq)
 
   def modelConfFilePath: String = conf(Configuration.MODEL_CONF_FILE_PATH)
 

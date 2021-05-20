@@ -48,7 +48,7 @@ class PMMLModel(modelFilePath: String, conf: Configuration)
         implicit val formats: DefaultFormats.type = DefaultFormats
         val v = r.getAs[DenseVector]("probability").values
         val vStr = Serialization.write(v)
-        OutputData(r.getAs[String]("id"), vStr, Double.NaN)
+        OutputData(r.getAs[String]("id"), vStr, Double.NaN, null)
       })(Encoders.product[OutputData])
       .toDF()
   }

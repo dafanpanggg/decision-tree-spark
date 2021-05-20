@@ -3,6 +3,7 @@ package com.yang.decision.build
 import com.yang.decision.Configuration
 import com.yang.decision.tree._
 import org.apache.spark.sql.DataFrame
+import org.json4s.JsonAST.JNothing
 import org.json4s.jackson.JsonMethods
 import org.json4s.{DefaultFormats, JValue}
 
@@ -12,6 +13,7 @@ import org.json4s.{DefaultFormats, JValue}
   * @author yangfan
   * @since 2021/3/16
   * @version 1.0.0
+  * @version 1.0.1 2021/5/20 修复containsKey方法无法正确检测JValue是否存在key
   */
 object Parser {
 
@@ -53,7 +55,8 @@ object Parser {
     case _ => null
   }
 
-  def containsKey(jv: JValue, key: String): Boolean = {
-    jv.findField(_._1.equals(key)).nonEmpty
+  def containsKey(jv: JValue, key: String): Boolean = jv \ key match {
+    case JNothing => false
+    case _ => true
   }
 }
