@@ -14,6 +14,8 @@
 
 @version 2021/5/20 V1.0.5 对[[com.yang.DecisionTreeApplication]]入口类进行封装，提供外部开发测试的上下文[[com.yang.decision.ApplicationContext]]，示例：
 
+args传参: --decision.tree.file.path /xxx/xxx/conf/Car.json --process.time ${dateSuffix} --enable.sparse.vector true --parallelism 500
+
 ```scala
 def main(args: Array[String]): Unit = {
     val conf = Seq(
