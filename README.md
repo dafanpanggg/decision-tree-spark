@@ -12,7 +12,7 @@
 
 @version 2021/3/29 V1.0.4 增加source字段，用于区分特征计算的数据来源
 
-@version 2021/3/29 V1.0.5 对[[com.yang.DecisionTreeApplication]]入口类进行封装，提供外部开发测试的上下文[[com.bj58.decision.ApplicationContext]]，示例：
+@version 2021/3/29 V1.0.5 对[[com.yang.DecisionTreeApplication]]入口类进行封装，提供外部开发测试的上下文[[com.yang.decision.ApplicationContext]]，示例：
 
 ```scala
 def main(args: Array[String]): Unit = {
@@ -56,102 +56,102 @@ def main(args: Array[String]): Unit = {
 
 ### 配置文件示例：
 
-    ```json
-    {
-        "schema": "id, jr_age, xinan_age, jl_age, umc_age, yc_age, vector",
-        "source": "xxxxxx, age_group",
-        "sink": "xxxxxx, age_group",
-        "rules": {
-            "rule": "jr_age != null",
+```json
+{
+    "schema": "id, jr_age, xinan_age, jl_age, umc_age, yc_age, vector",
+    "source": "xxxxxx, age_group",
+    "sink": "xxxxxx, age_group",
+    "rules": {
+        "rule": "jr_age != null",
+        "left": {
+            "rule": "GeneralRule, jr_age, 1.0"
+        },
+        "right": {
+            "rule": "xinan_age != null",
             "left": {
-                "rule": "GeneralRule, jr_age, 1.0"
+                "rule": "GeneralRule, xinan_age, 0.997349184"
             },
             "right": {
-                "rule": "xinan_age != null",
+                "rule": "jl_age != null || umc_age != null || yc_age != null",
                 "left": {
-                    "rule": "GeneralRule, xinan_age, 0.997349184"
-                },
-                "right": {
-                    "rule": "jl_age != null || umc_age != null || yc_age != null",
+                    "rule": "jl_age == umc_age || jl_age == yc_age || umc_age == yc_age",
                     "left": {
-                        "rule": "jl_age == umc_age || jl_age == yc_age || umc_age == yc_age",
+                        "rule": "jl_age == umc_age || jl_age == yc_age",
                         "left": {
-                            "rule": "jl_age == umc_age || jl_age == yc_age",
-                            "left": {
-                                "rule": "GeneralRule, jl_age, 0.992448605"
-                            },
-                            "right": {
-                                "rule": "GeneralRule, umc_age, 0.992448605"
-                            }
+                            "rule": "GeneralRule, jl_age, 0.992448605"
                         },
                         "right": {
-                            "rule": "jl_age != null",
-                            "left": {
-                                "rule": "GeneralRule, jl_age, 0.982582546"
-                            },
-                            "right": {
-                                "rule": "umc_age != null",
-                                "left": {
-                                    "rule": "GeneralRule, umc_age, 0.974128879"
-                                },
-                                "right": {
-                                    "rule": "GeneralRule, yc_age, 0.920175899"
-                                }
-                            }
+                            "rule": "GeneralRule, umc_age, 0.992448605"
                         }
                     },
                     "right": {
-                        "rule": "vector != null",
+                        "rule": "jl_age != null",
                         "left": {
-                            "rule": "ModelRule, XGBoost, /xxxxxx/xxxxxx/xxxxxx/age-applist-xgb-0901, null"
+                            "rule": "GeneralRule, jl_age, 0.982582546"
+                        },
+                        "right": {
+                            "rule": "umc_age != null",
+                            "left": {
+                                "rule": "GeneralRule, umc_age, 0.974128879"
+                            },
+                            "right": {
+                                "rule": "GeneralRule, yc_age, 0.920175899"
+                            }
                         }
+                    }
+                },
+                "right": {
+                    "rule": "vector != null",
+                    "left": {
+                        "rule": "ModelRule, XGBoost, /xxxxxx/xxxxxx/xxxxxx/age-applist-xgb-0901, null"
                     }
                 }
             }
         }
     }
-    ```
+}
+```
 
 ## 模型抽象：
 
-    ```
-    分支节点和叶子节点使用：策略模式 Strategy
+```
+分支节点和叶子节点使用：策略模式 Strategy
 
-    ModelProperties：元数据配置
-        schema: Array[String] 数据源字段信息
-        input: Array[String] 数据源表信息
-        output: Array[String] 输出表信息
+ModelProperties：元数据配置
+    schema: Array[String] 数据源字段信息
+    input: Array[String] 数据源表信息
+    output: Array[String] 输出表信息
 
-    OutputSchema：输出数据集，叶子节点的值
-        id：String 主键
-        featureValue：String 特征值
-        confidence：Double 置信度
+OutputSchema：输出数据集，叶子节点的值
+    id：String 主键
+    featureValue：String 特征值
+    confidence：Double 置信度
 
-    Rule：计算规则
-        execute(seq：DataFrame):DataFrame 执行计算
+Rule：计算规则
+    execute(seq：DataFrame):DataFrame 执行计算
 
-    GeneralRule(rule: String)：一般计算，继承自Rule
+GeneralRule(rule: String)：一般计算，继承自Rule
 
-    ModelRule(modelClass: String,
-                modelFilePath: String,
-                otherConf： Map[String,String])：模型计算，继承自Rule
+ModelRule(modelClass: String,
+            modelFilePath: String,
+            otherConf： Map[String,String])：模型计算，继承自Rule
 
-    Calculation：计算节点（叶子节点），继承自Leaf
-        seq：DataFrame 输入特征数据
-        rule：Rule 计算规则
+Calculation：计算节点（叶子节点），继承自Leaf
+    seq：DataFrame 输入特征数据
+    rule：Rule 计算规则
 
-    Condition：条件节点（分支节点），继承自Branch
-        seq：DataFrame 输入特征数据
-        //rule：Rule 计算规则
-        condition：条件表达式
+Condition：条件节点（分支节点），继承自Branch
+    seq：DataFrame 输入特征数据
+    //rule：Rule 计算规则
+    condition：条件表达式
 
-    Parser：解析器，将输出text解析为一棵二叉树，并实现绑定规则的功能
-        parse：Tree 解析功能
+Parser：解析器，将输出text解析为一棵二叉树，并实现绑定规则的功能
+    parse：Tree 解析功能
 
-    Binder：绑定器，根据解析后的二叉树和节点规则，将输入数据依次绑定到各个节点
-        bind：Tree 绑定功能
+Binder：绑定器，根据解析后的二叉树和节点规则，将输入数据依次绑定到各个节点
+    bind：Tree 绑定功能
 
-    Executor：执行器，遍历整棵树，将需要计算的节点数据merge起来输出
-        execute：Unit 执行计算
-        executeAndSaveResultData: Unit 执行计算并写出数据
-    ```
+Executor：执行器，遍历整棵树，将需要计算的节点数据merge起来输出
+    execute：Unit 执行计算
+    executeAndSaveResultData: Unit 执行计算并写出数据
+```
