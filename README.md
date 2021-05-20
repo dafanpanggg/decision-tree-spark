@@ -6,13 +6,13 @@
 
 @version 2021/3/29 V1.0.1 对数据源抽象部分进行了改动，由实现Source类变更为在Json配置文件中配置
 
-@version 2021/3/29 V1.0.2 XGBoot模型在计算时，需要传入一个特征向量，需要使用Array<Double>类型。经过测试，发现这种复杂类型在数据传输过程中需要占用较大的内存，影响计算效率。解决方案：在向量维度较多时，我们提供将向量转换成稀疏数组Array<Array<Double>>，再将其转为字符串格式，这样在数据传递过程中就能大幅减少内存占用。
+@version 2021/4/2 V1.0.2 XGBoot模型在计算时，需要传入一个特征向量，需要使用Array<Double>类型。经过测试，发现这种复杂类型在数据传输过程中需要占用较大的内存，影响计算效率。解决方案：在向量维度较多时，我们提供将向量转换成稀疏数组Array<Array<Double>>，再将其转为字符串格式，这样在数据传递过程中就能大幅减少内存占用。
 
-@version 2021/3/29 V1.0.3 增加了节点对PMML的支持，增加Model实现类PmmlModel
+@version 2021/4/10 V1.0.3 增加了节点对PMML的支持，增加Model实现类PmmlModel
 
-@version 2021/3/29 V1.0.4 增加source字段，用于区分特征计算的数据来源
+@version 2021/5/20 V1.0.4 增加source字段，用于区分特征计算的数据来源
 
-@version 2021/3/29 V1.0.5 对[[com.yang.DecisionTreeApplication]]入口类进行封装，提供外部开发测试的上下文[[com.yang.decision.ApplicationContext]]，示例：
+@version 2021/5/20 V1.0.5 对[[com.yang.DecisionTreeApplication]]入口类进行封装，提供外部开发测试的上下文[[com.yang.decision.ApplicationContext]]，示例：
 
 ```scala
 def main(args: Array[String]): Unit = {
