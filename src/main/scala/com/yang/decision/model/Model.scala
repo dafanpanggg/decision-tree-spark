@@ -20,8 +20,8 @@ abstract class Model(modelFilePath: String, conf: Configuration) extends Seriali
 object Model {
 
   def getReference(name: String): String = name match {
-    case "XGBoost" | "xgboost" => "com.bj58.decision.model.XGBoostPipelineModel"
-    case "PMML" | "pmml" => "com.bj58.decision.model.PMMLModel"
+    case "XGBoost" | "xgboost" => "com.yang.decision.model.XGBoostPipelineModel"
+    case "PMML" | "pmml" => "com.yang.decision.model.PMMLModel"
     case _ => throw new RuntimeException(s"`$name` is an unsupported model type !")
   }
 }
