@@ -21,10 +21,10 @@ args传参:
 ```scala
 def main(args: Array[String]): Unit = {
     val conf = Seq(
-      (Configuration.PROCESS_TIME, String.valueOf(1)),
-      (Configuration.IS_LOCAL, String.valueOf(true)),
-      (Configuration.IS_CACHE, String.valueOf(false)),
-      (Configuration.ENABLE_SPARSE_VECTOR, String.valueOf(false)),
+      (Configuration.PROCESS_TIME, 1),
+      (Configuration.IS_LOCAL, true),
+      (Configuration.IS_CACHE, false),
+      (Configuration.ENABLE_SPARSE_VECTOR, false),
       ("local.source", "car.csv")
     )
     val context = DecisionTreeApplication
